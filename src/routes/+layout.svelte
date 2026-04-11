@@ -4,9 +4,11 @@
 	import { page } from '$app/state';
 	import { locales, localizeHref } from '$lib/paraglide/runtime';
 	import 'konsta/svelte/theme.css';
+
+	let { children } = $props();
 </script>
 
-<slot />
+{@render children()}
 
 <div style="display:none">
 	{#each locales as locale (locale)}
