@@ -6,12 +6,18 @@
 	let wakeTime = $hydration.settings.wakeTime;
 	let sleepTime = $hydration.settings.sleepTime;
 	let remindersPerDay = $hydration.settings.remindersPerDay;
+	let waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
 	let errors: string[] = [];
 	let showAnimation = false;
 
 	function handleSubmit() {
 		errors = [];
-		const validation = validateSettings({ wakeTime, sleepTime, remindersPerDay });
+		const validation = validateSettings({
+			wakeTime,
+			sleepTime,
+			remindersPerDay,
+			waterAmountPerReminder
+		});
 
 		if (!validation.valid) {
 			errors = validation.errors;
@@ -22,6 +28,7 @@
 			wakeTime,
 			sleepTime,
 			remindersPerDay,
+			waterAmountPerReminder,
 			isConfigured: true
 		});
 
@@ -32,7 +39,9 @@
 	}
 </script>
 
-<div class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 px-4">
+<div
+	class="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 px-4"
+>
 	{#if showAnimation}
 		<!-- Drinking Animation -->
 		<div class="flex flex-col items-center gap-8">
@@ -40,7 +49,7 @@
 			<div class="relative h-64 w-40 rounded-b-3xl border-4 border-blue-400 bg-white shadow-lg">
 				<!-- Water inside bottle -->
 				<div
-					class="absolute bottom-0 left-0 right-0 rounded-b-2xl bg-gradient-to-t from-cyan-400 to-blue-300 transition-all duration-1000"
+					class="absolute right-0 bottom-0 left-0 rounded-b-2xl bg-gradient-to-t from-cyan-400 to-blue-300 transition-all duration-1000"
 					style="height: 0%; animation: fillWater 1.5s ease-in forwards;"
 				/>
 
@@ -62,12 +71,13 @@
 				<p class="text-gray-600">Let's set up your hydration reminders</p>
 			</div>
 
-			<form on:submit|preventDefault={handleSubmit} class="space-y-6 rounded-2xl bg-white p-8 shadow-lg">
+			<form
+				on:submit|preventDefault={handleSubmit}
+				class="space-y-6 rounded-2xl bg-white p-8 shadow-lg"
+			>
 				<!-- Wake Time -->
 				<div class="space-y-2">
-					<label for="wake" class="block text-sm font-semibold text-gray-700">
-						Wake up time
-					</label>
+					<label for="wake" class="block text-sm font-semibold text-gray-700"> Wake up time </label>
 					<input
 						id="wake"
 						type="time"
@@ -79,9 +89,7 @@
 
 				<!-- Sleep Time -->
 				<div class="space-y-2">
-					<label for="sleep" class="block text-sm font-semibold text-gray-700">
-						Sleep time
-					</label>
+					<label for="sleep" class="block text-sm font-semibold text-gray-700"> Sleep time </label>
 					<input
 						id="sleep"
 						type="time"
@@ -111,15 +119,39 @@
 					<p class="text-sm text-gray-500">Recommended: 8-10 times per day</p>
 				</div>
 
+				<!-- Water Amount Per Reminder -->
+				<div class="space-y-2">
+					<label for="waterAmount" class="block text-sm font-semibold text-gray-700">
+						How much water per reminder?
+					</label>
+					<div class="flex items-center gap-4">
+						<input
+							id="waterAmount"
+							type="number"
+							bind:value={waterAmountPerReminder}
+							min="50"
+							max="1000"
+							step="25"
+							class="flex-1 rounded-lg border-2 border-gray-200 px-4 py-2 text-lg transition-colors focus:border-blue-400 focus:outline-none"
+							required
+						/>
+						<span class="text-lg font-semibold text-gray-600">ml</span>
+					</div>
+					<p class="text-sm text-gray-500">Recommended: 200-300ml per reminder</p>
+				</div>
+
 				<!-- Water Intake Info -->
 				{#if remindersPerDay > 0}
 					<div class="space-y-2 rounded-lg bg-blue-50 p-4">
 						<p class="text-sm font-semibold text-blue-900">💧 Hydration Goal:</p>
 						<p class="text-sm text-blue-800">
-							You'll get a reminder every <strong
-								>{Math.round(1440 / remindersPerDay)} minutes</strong
-							>
+							<strong>Drink {waterAmountPerReminder}ml</strong> every
+							<strong>{Math.round(1440 / remindersPerDay)} minutes</strong>
 							between your wake and sleep times.
+						</p>
+						<p class="text-sm text-blue-800">
+							<strong>Total daily goal:</strong>
+							{remindersPerDay * waterAmountPerReminder}ml
 						</p>
 					</div>
 				{/if}

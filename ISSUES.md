@@ -1,10 +1,19 @@
-# Known Issues & Considerations
+### ✅ Water Amount Per Reminder
 
-## Issues Identified During Implementation
+- **Issue**: Missing label for how much water should be drank on every reminder
+- **Status**: ✅ Implemented - Added waterAmountPerReminder field (50-1000ml, default 250ml)
+- **Implementation**:
+  - Added to HydrationSettings interface
+  - Added validation (50-1000ml range)
+  - Added to welcome and settings forms
+  - Added totalDailyWater derived store
+  - Updated all UI to show per-reminder amount and daily total
+- **Priority**: High (user-requested feature)
 
 This file documents known issues, problematic scenarios, and edge cases that have been identified during development.
 
 ### 1. Settings Change & Daily Progress
+
 - **Issue**: When user changes reminder frequency, does daily progress (waterConsumed) stay the same or reset?
 - **Current Implementation**: Progress stays, but progress bar may look different
 - **Example**: If user sets 8 reminders and drinks 4, then changes to 10 reminders, they'll have 4/10 (40%)
@@ -13,16 +22,18 @@ This file documents known issues, problematic scenarios, and edge cases that hav
 - **Priority**: Medium
 
 ### 2. Time Wrapping (Sleep After Midnight)
+
 - **Issue**: If user sets sleep time before wake time (e.g., wake 8am, sleep 2am), the system interprets sleep as next day
 - **Current Implementation**: Handles via `sleepDate.setDate(sleepDate.getDate() + 1)` when sleep < wake
 - **Edge Case**: If actual sleep time crosses midnight (11pm to 2am), next reminder calculation may be off
 - **Status**: ✅ Implemented - needs testing
-- **Testing Needed**: 
+- **Testing Needed**:
   - Wake 23:00, Sleep 02:00
   - Wake 22:00, Sleep 06:00
 - **Priority**: High
 
 ### 3. Morning Recalculation
+
 - **Issue**: Next reminder time is calculated based on current time, not when user woke up
 - **Current Implementation**: Uses `new Date()` for wake time, which is today's date
 - **Problem**: If app loads at 3pm, it calculates intervals from 3pm using today's wake time
@@ -31,6 +42,7 @@ This file documents known issues, problematic scenarios, and edge cases that hav
 - **Priority**: High
 
 ### 4. Daily Reset
+
 - **Issue**: App never automatically resets daily progress at midnight or wake time
 - **Current Implementation**: User must manually reset or continue from yesterday's count
 - **Status**: ❌ Not implemented
@@ -38,6 +50,7 @@ This file documents known issues, problematic scenarios, and edge cases that hav
 - **Priority**: High
 
 ### 5. Browser Notifications
+
 - **Issue**: Browser notifications for reminders not implemented
 - **Current Implementation**: None
 - **Status**: ❌ Not implemented
@@ -45,6 +58,7 @@ This file documents known issues, problematic scenarios, and edge cases that hav
 - **Priority**: Low (nice-to-have)
 
 ### 6. Performance with Animations
+
 - **Issue**: Wave animation in bottle uses SVG data URL and continuous animation
 - **Potential Problem**: On low-end devices or extended usage, may drain battery
 - **Current Implementation**: 15s loop animation
@@ -53,6 +67,7 @@ This file documents known issues, problematic scenarios, and edge cases that hav
 - **Priority**: Low (acceptable for personal use)
 
 ### 7. Data Loss Risk
+
 - **Issue**: All data stored in localStorage only - no backup
 - **Current Implementation**: Single JSON in localStorage
 - **Risk**: Browser clear cache = all data lost
@@ -63,18 +78,21 @@ This file documents known issues, problematic scenarios, and edge cases that hav
 ## Validation Rules Implemented
 
 ### ✅ Wake & Sleep Times
+
 - [x] Wake time must be valid time format (HH:MM)
 - [x] Sleep time must be valid time format (HH:MM)
 - [x] Wake and sleep times cannot be identical
 - [x] Handles same-day and next-day sleep times
 
 ### ✅ Reminder Frequency
+
 - [x] Must be positive integer (1-20)
 - [x] Cannot be 0 or negative
 - [x] Upper limit: 20 reminders per day
 - [x] Shows helpful interval calculation (minutes between reminders)
 
 ### ✅ State Management
+
 - [x] localStorage persistence
 - [x] Derived stores for progress, remaining, nextReminderTime
 - [x] TypeScript validation

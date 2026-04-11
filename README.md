@@ -13,6 +13,7 @@ A personal water reminder and tracking app to help you stay hydrated throughout 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+ or Bun
 - npm, pnpm, yarn, or bun package manager
 
@@ -47,7 +48,7 @@ bun dev
    - Even reminder intervals
    - Total water intake recommendation
 
-3. **Tracking**: 
+3. **Tracking**:
    - Log each time you drink
    - Visual progress through the day
    - See how many reminders/glasses you have left

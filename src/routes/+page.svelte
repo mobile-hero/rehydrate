@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { hydration, progress, remaining, nextReminderTime } from '$lib/stores/hydration';
+	import {
+		hydration,
+		progress,
+		remaining,
+		nextReminderTime,
+		totalDailyWater
+	} from '$lib/stores/hydration';
 
 	let isFirstVisit = true;
 
@@ -37,10 +43,12 @@
 					<!-- Bottle Container -->
 					<div class="relative h-96 w-32">
 						<!-- Bottle shape -->
-						<div class="absolute inset-0 rounded-b-3xl rounded-t-xl border-4 border-blue-400 bg-white shadow-2xl">
+						<div
+							class="absolute inset-0 rounded-t-xl rounded-b-3xl border-4 border-blue-400 bg-white shadow-2xl"
+						>
 							<!-- Water inside bottle with glass effect -->
 							<div
-								class="absolute bottom-0 left-0 right-0 rounded-b-2xl bg-gradient-to-t from-cyan-400 via-blue-300 to-transparent transition-all duration-500"
+								class="absolute right-0 bottom-0 left-0 rounded-b-2xl bg-gradient-to-t from-cyan-400 via-blue-300 to-transparent transition-all duration-500"
 								style="height: {$progress}%"
 							>
 								<!-- Wave effect -->
@@ -53,11 +61,13 @@
 							</div>
 
 							<!-- Bottle highlights for glass effect -->
-							<div class="absolute left-2 top-2 h-16 w-2 rounded-full bg-white opacity-40" />
+							<div class="absolute top-2 left-2 h-16 w-2 rounded-full bg-white opacity-40" />
 						</div>
 
 						<!-- Steps markers on the bottle -->
-						<div class="absolute inset-y-0 right-0 flex flex-col justify-between pr-2 text-xs font-semibold text-gray-600">
+						<div
+							class="absolute inset-y-0 right-0 flex flex-col justify-between pr-2 text-xs font-semibold text-gray-600"
+						>
 							{#each Array(5) as _, i}
 								<div class="flex items-center gap-1">
 									<span>{Math.round((i + 1) * 20)}%</span>
@@ -113,6 +123,14 @@
 									<strong>Interval:</strong>
 									{Math.round(1440 / $hydration.settings.remindersPerDay)} min
 								</p>
+								<p>
+									<strong>Per reminder:</strong>
+									{$hydration.settings.waterAmountPerReminder}ml
+								</p>
+								<p>
+									<strong>Daily goal:</strong>
+									{$totalDailyWater}ml
+								</p>
 							</div>
 						</div>
 
@@ -125,9 +143,7 @@
 						{:else if $hydration.waterConsumed >= $hydration.settings.remindersPerDay}
 							<div class="rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 p-5 shadow-md">
 								<p class="text-sm font-semibold text-green-900">✨ All Done!</p>
-								<p class="mt-2 text-sm text-green-700">
-									Great job staying hydrated today! 🎉
-								</p>
+								<p class="mt-2 text-sm text-green-700">Great job staying hydrated today! 🎉</p>
 							</div>
 						{/if}
 

@@ -4,6 +4,7 @@
 	let wakeTime = $hydration.settings.wakeTime;
 	let sleepTime = $hydration.settings.sleepTime;
 	let remindersPerDay = $hydration.settings.remindersPerDay;
+	let waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
 	let errors: string[] = [];
 	let successMessage = '';
 
@@ -11,7 +12,12 @@
 		errors = [];
 		successMessage = '';
 
-		const validation = validateSettings({ wakeTime, sleepTime, remindersPerDay });
+		const validation = validateSettings({
+			wakeTime,
+			sleepTime,
+			remindersPerDay,
+			waterAmountPerReminder
+		});
 
 		if (!validation.valid) {
 			errors = validation.errors;
@@ -21,7 +27,8 @@
 		hydration.updateSettings({
 			wakeTime,
 			sleepTime,
-			remindersPerDay
+			remindersPerDay,
+			waterAmountPerReminder
 		});
 
 		successMessage = 'Settings updated! ✓';
@@ -36,6 +43,7 @@
 			wakeTime = '08:00';
 			sleepTime = '23:00';
 			remindersPerDay = 8;
+			waterAmountPerReminder = 250;
 		}
 	}
 </script>
@@ -49,12 +57,13 @@
 		</div>
 
 		<!-- Settings Form -->
-		<form on:submit|preventDefault={handleSave} class="space-y-6 rounded-2xl bg-white p-8 shadow-lg">
+		<form
+			on:submit|preventDefault={handleSave}
+			class="space-y-6 rounded-2xl bg-white p-8 shadow-lg"
+		>
 			<!-- Wake Time -->
 			<div class="space-y-2">
-				<label for="wake" class="block text-sm font-semibold text-gray-700">
-					Wake up time
-				</label>
+				<label for="wake" class="block text-sm font-semibold text-gray-700"> Wake up time </label>
 				<input
 					id="wake"
 					type="time"
@@ -66,9 +75,7 @@
 
 			<!-- Sleep Time -->
 			<div class="space-y-2">
-				<label for="sleep" class="block text-sm font-semibold text-gray-700">
-					Sleep time
-				</label>
+				<label for="sleep" class="block text-sm font-semibold text-gray-700"> Sleep time </label>
 				<input
 					id="sleep"
 					type="time"
@@ -98,16 +105,42 @@
 				<p class="text-sm text-gray-500">Recommended: 8-10 times per day</p>
 			</div>
 
+			<!-- Water Amount Per Reminder -->
+			<div class="space-y-2">
+				<label for="waterAmount" class="block text-sm font-semibold text-gray-700">
+					How much water per reminder?
+				</label>
+				<div class="flex items-center gap-4">
+					<input
+						id="waterAmount"
+						type="number"
+						bind:value={waterAmountPerReminder}
+						min="50"
+						max="1000"
+						step="25"
+						class="flex-1 rounded-lg border-2 border-gray-200 px-4 py-2 text-lg transition-colors focus:border-blue-400 focus:outline-none"
+						required
+					/>
+					<span class="text-lg font-semibold text-gray-600">ml</span>
+				</div>
+				<p class="text-sm text-gray-500">Recommended: 200-300ml per reminder</p>
+			</div>
+
 			<!-- Current Settings Info -->
 			<div class="space-y-2 rounded-lg bg-blue-50 p-4">
 				<p class="text-sm font-semibold text-blue-900">📊 Current Configuration:</p>
 				<p class="text-sm text-blue-800">
-					<strong>Hydration Goal:</strong> Every
+					<strong>Hydration Goal:</strong> Drink {waterAmountPerReminder}ml every
 					<strong>{Math.round(1440 / remindersPerDay)} minutes</strong>
 					between your wake and sleep times.
 				</p>
 				<p class="text-sm text-blue-800">
-					<strong>Active Hours:</strong> {wakeTime} to {sleepTime}
+					<strong>Total daily goal:</strong>
+					{remindersPerDay * waterAmountPerReminder}ml
+				</p>
+				<p class="text-sm text-blue-800">
+					<strong>Active Hours:</strong>
+					{wakeTime} to {sleepTime}
 				</p>
 			</div>
 
@@ -150,8 +183,8 @@
 		<div class="space-y-2 rounded-lg bg-amber-50 p-4">
 			<p class="text-sm font-semibold text-amber-900">ℹ️ Note:</p>
 			<p class="text-sm text-amber-800">
-				Changing your settings will adjust your hydration reminders but won't reset your daily progress.
-				Check <a href="/issues" class="underline">ISSUES.md</a> for known considerations.
+				Changing your settings will adjust your hydration reminders but won't reset your daily
+				progress. Check <a href="/issues" class="underline">ISSUES.md</a> for known considerations.
 			</p>
 		</div>
 	</div>

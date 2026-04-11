@@ -4,6 +4,7 @@ export interface HydrationSettings {
 	wakeTime: string; // HH:MM format
 	sleepTime: string; // HH:MM format
 	remindersPerDay: number;
+	waterAmountPerReminder: number; // in ml
 	isConfigured: boolean;
 }
 
@@ -22,6 +23,7 @@ function createHydrationStore() {
 			wakeTime: '08:00',
 			sleepTime: '23:00',
 			remindersPerDay: 8,
+			waterAmountPerReminder: 250, // 250ml = 8oz
 			isConfigured: false
 		},
 		waterConsumed: 0,
@@ -84,6 +86,7 @@ function createHydrationStore() {
 					wakeTime: '08:00',
 					sleepTime: '23:00',
 					remindersPerDay: 8,
+					waterAmountPerReminder: 250,
 					isConfigured: false
 				},
 				waterConsumed: 0,
@@ -96,53 +99,51 @@ function createHydrationStore() {
 export const hydration = createHydrationStore();
 
 // Derived stores for computed values
-export const progress: Readable<number> = derived(
-	hydration,
-	($hydration) =>
-		$hydration.settings.remindersPerDay > 0
-			? ($hydration.waterConsumed / $hydration.settings.remindersPerDay) * 100
-			: 0
+export const progress: Readable<number> = derived(hydration, ($hydration) =>
+	$hydration.settings.remindersPerDay > 0
+		? ($hydration.waterConsumed / $hydration.settings.remindersPerDay) * 100
+		: 0
 );
 
-export const remaining: Readable<number> = derived(
-	hydration,
-	($hydration) =>
-		Math.max($hydration.settings.remindersPerDay - $hydration.waterConsumed, 0)
+export const remaining: Readable<number> = derived(hydration, ($hydration) =>
+	Math.max($hydration.settings.remindersPerDay - $hydration.waterConsumed, 0)
 );
 
-export const nextReminderTime: Readable<string | null> = derived(
+export const totalDailyWater: Readable<number> = derived(
 	hydration,
-	($hydration) => {
-		const { wakeTime, sleepTime, remindersPerDay, isConfigured } = $hydration.settings;
-		if (!isConfigured || remindersPerDay <= 0) return null;
+	($hydration) => $hydration.settings.remindersPerDay * $hydration.settings.waterAmountPerReminder
+);
 
-		const nextIndex = $hydration.waterConsumed + 1;
-		if (nextIndex > remindersPerDay) return null;
+export const nextReminderTime: Readable<string | null> = derived(hydration, ($hydration) => {
+	const { wakeTime, sleepTime, remindersPerDay, isConfigured } = $hydration.settings;
+	if (!isConfigured || remindersPerDay <= 0) return null;
 
-		// Parse times
-		const [wakeHour, wakeMin] = wakeTime.split(':').map(Number);
-		const [sleepHour, sleepMin] = sleepTime.split(':').map(Number);
+	const nextIndex = $hydration.waterConsumed + 1;
+	if (nextIndex > remindersPerDay) return null;
 
-		const wakeDate = new Date();
-		wakeDate.setHours(wakeHour, wakeMin, 0);
+	// Parse times
+	const [wakeHour, wakeMin] = wakeTime.split(':').map(Number);
+	const [sleepHour, sleepMin] = sleepTime.split(':').map(Number);
 
-		const sleepDate = new Date();
-		sleepDate.setHours(sleepHour, sleepMin, 0);
+	const wakeDate = new Date();
+	wakeDate.setHours(wakeHour, wakeMin, 0);
 
-		// If sleep time is earlier than wake time, it's next day
-		if (sleepDate < wakeDate) {
-			sleepDate.setDate(sleepDate.getDate() + 1);
-		}
+	const sleepDate = new Date();
+	sleepDate.setHours(sleepHour, sleepMin, 0);
 
-		const wakeTimestamp = wakeDate.getTime();
-		const sleepTimestamp = sleepDate.getTime();
-		const totalInterval = (sleepTimestamp - wakeTimestamp) / remindersPerDay;
-		const nextReminderTimestamp = wakeTimestamp + totalInterval * (nextIndex - 1);
-
-		const nextTime = new Date(nextReminderTimestamp);
-		return nextTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+	// If sleep time is earlier than wake time, it's next day
+	if (sleepDate < wakeDate) {
+		sleepDate.setDate(sleepDate.getDate() + 1);
 	}
-);
+
+	const wakeTimestamp = wakeDate.getTime();
+	const sleepTimestamp = sleepDate.getTime();
+	const totalInterval = (sleepTimestamp - wakeTimestamp) / remindersPerDay;
+	const nextReminderTimestamp = wakeTimestamp + totalInterval * (nextIndex - 1);
+
+	const nextTime = new Date(nextReminderTimestamp);
+	return nextTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+});
 
 // Validation helper
 export function validateSettings(settings: Partial<HydrationSettings>): {
@@ -172,13 +173,25 @@ export function validateSettings(settings: Partial<HydrationSettings>): {
 		}
 	}
 
+	if (settings.waterAmountPerReminder !== undefined) {
+		if (
+			!Number.isInteger(settings.waterAmountPerReminder) ||
+			settings.waterAmountPerReminder < 50
+		) {
+			errors.push('Water amount per reminder must be at least 50ml');
+		}
+		if (settings.waterAmountPerReminder > 1000) {
+			errors.push('Water amount per reminder cannot exceed 1000ml');
+		}
+	}
+
 	// Cross-field validation
 	if (settings.wakeTime && settings.sleepTime) {
 		const [wakeHour, wakeMin] = settings.wakeTime.split(':').map(Number);
 		const [sleepHour, sleepMin] = settings.sleepTime.split(':').map(Number);
 
 		const wakeTotal = wakeHour * 60 + wakeMin;
-		let sleepTotal = sleepHour * 60 + sleepMin;
+		const sleepTotal = sleepHour * 60 + sleepMin;
 
 		// Allow wrapping to next day, but not same time
 		if (wakeTotal === sleepTotal) {
