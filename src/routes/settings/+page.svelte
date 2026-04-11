@@ -1,12 +1,20 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { hydration, validateSettings } from '$lib/stores/hydration';
 
-	let wakeTime = $hydration.settings.wakeTime;
-	let sleepTime = $hydration.settings.sleepTime;
-	let remindersPerDay = $hydration.settings.remindersPerDay;
-	let waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
-	let errors: string[] = [];
-	let successMessage = '';
+	let wakeTime = $state($hydration.settings.wakeTime);
+	let sleepTime = $state($hydration.settings.sleepTime);
+	let remindersPerDay = $state($hydration.settings.remindersPerDay);
+	let waterAmountPerReminder = $state($hydration.settings.waterAmountPerReminder);
+	let errors: string[] = $state([]);
+	let successMessage = $state('');
+
+	$effect(() => {
+		wakeTime = $hydration.settings.wakeTime;
+		sleepTime = $hydration.settings.sleepTime;
+		remindersPerDay = $hydration.settings.remindersPerDay;
+		waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
+	});
 
 	function handleSave() {
 		errors = [];
@@ -33,17 +41,14 @@
 
 		successMessage = 'Settings updated! ✓';
 		setTimeout(() => {
-			successMessage = '';
-		}, 3000);
+			goto('/');
+		}, 1500);
 	}
 
 	function handleReset() {
 		if (confirm('Are you sure? This will reset all your data.')) {
 			hydration.reset();
-			wakeTime = '08:00';
-			sleepTime = '23:00';
-			remindersPerDay = 8;
-			waterAmountPerReminder = 250;
+			// Variables will automatically update due to reactive statements
 		}
 	}
 </script>

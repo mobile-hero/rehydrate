@@ -3,12 +3,19 @@
 	import { hydration, validateSettings } from '$lib/stores/hydration';
 	import * as m from '$lib/paraglide/messages';
 
-	let wakeTime = $hydration.settings.wakeTime;
-	let sleepTime = $hydration.settings.sleepTime;
-	let remindersPerDay = $hydration.settings.remindersPerDay;
-	let waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
-	let errors: string[] = [];
-	let showAnimation = false;
+	let wakeTime = $state($hydration.settings.wakeTime);
+	let sleepTime = $state($hydration.settings.sleepTime);
+	let remindersPerDay = $state($hydration.settings.remindersPerDay);
+	let waterAmountPerReminder = $state($hydration.settings.waterAmountPerReminder);
+	let errors: string[] = $state([]);
+	let showAnimation = $state(false);
+
+	$effect(() => {
+		wakeTime = $hydration.settings.wakeTime;
+		sleepTime = $hydration.settings.sleepTime;
+		remindersPerDay = $hydration.settings.remindersPerDay;
+		waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
+	});
 
 	function handleSubmit() {
 		errors = [];
