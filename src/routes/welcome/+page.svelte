@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { hydration, validateSettings } from '$lib/stores/hydration';
-	import * as m from '$paraglide/messages';
+	import * as m from '$lib/paraglide/messages';
 
 	let wakeTime = $hydration.settings.wakeTime;
 	let sleepTime = $hydration.settings.sleepTime;
