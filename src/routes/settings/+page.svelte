@@ -16,7 +16,8 @@
 		waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
 	});
 
-	function handleSave() {
+	function handleSave(event: Event) {
+		event.preventDefault();
 		errors = [];
 		successMessage = '';
 
@@ -63,7 +64,7 @@
 
 		<!-- Settings Form -->
 		<form
-			on:submit|preventDefault={handleSave}
+			onsubmit={handleSave}
 			class="space-y-6 rounded-2xl bg-white p-8 shadow-lg"
 		>
 			<!-- Wake Time -->
@@ -176,7 +177,7 @@
 
 				<button
 					type="button"
-					on:click={handleReset}
+					onclick={handleReset}
 					class="w-full rounded-lg border-2 border-red-300 py-2 font-semibold text-red-600 transition-colors hover:bg-red-50"
 				>
 					Reset All Data 🔄

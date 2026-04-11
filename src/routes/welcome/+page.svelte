@@ -17,7 +17,8 @@
 		waterAmountPerReminder = $hydration.settings.waterAmountPerReminder;
 	});
 
-	function handleSubmit() {
+	function handleSubmit(event: Event) {
+		event.preventDefault();
 		errors = [];
 		const validation = validateSettings({
 			wakeTime,
@@ -58,7 +59,7 @@
 				<div
 					class="absolute right-0 bottom-0 left-0 rounded-b-2xl bg-gradient-to-t from-cyan-400 to-blue-300 transition-all duration-1000"
 					style="height: 0%; animation: fillWater 1.5s ease-in forwards;"
-				/>
+				></div>
 
 				<!-- Glass emoji -->
 				<div
@@ -79,7 +80,7 @@
 			</div>
 
 			<form
-				on:submit|preventDefault={handleSubmit}
+				onsubmit={handleSubmit}
 				class="space-y-6 rounded-2xl bg-white p-8 shadow-lg"
 			>
 				<!-- Wake Time -->
