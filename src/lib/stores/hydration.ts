@@ -6,6 +6,7 @@ export interface HydrationSettings {
 	remindersPerDay: number;
 	waterAmountPerReminder: number; // in ml
 	isConfigured: boolean;
+	bottlePosition: 'left' | 'center' | 'right';
 }
 
 export interface HydrationState {
@@ -24,7 +25,8 @@ function createHydrationStore() {
 			sleepTime: '23:00',
 			remindersPerDay: 8,
 			waterAmountPerReminder: 250, // 250ml = 8oz
-			isConfigured: false
+			isConfigured: false,
+			bottlePosition: 'center'
 		},
 		waterConsumed: 0,
 		lastUpdated: new Date().toISOString()
@@ -87,7 +89,8 @@ function createHydrationStore() {
 					sleepTime: '23:00',
 					remindersPerDay: 8,
 					waterAmountPerReminder: 250,
-					isConfigured: false
+					isConfigured: false,
+					bottlePosition: 'center'
 				},
 				waterConsumed: 0,
 				lastUpdated: new Date().toISOString()
