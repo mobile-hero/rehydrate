@@ -194,11 +194,11 @@ export async function showReminderNotification(title: string, body: string): Pro
 	if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
 	try {
 		if ('serviceWorker' in navigator) {
-			const reg = await navigator.serviceWorker.getRegistration();
-			if (reg) {
-				await reg.showNotification(title, { body });
-				return;
-			}
+			// .ready always resolves to the active registration (unlike getRegistration
+			// which can return undefined while the SW is still activating)
+			const reg = await navigator.serviceWorker.ready;
+			await reg.showNotification(title, { body });
+			return;
 		}
 	} catch {
 		// fall through
@@ -219,10 +219,10 @@ export function startReminderScheduler(): () => void {
 		const delay = date.getTime() - Date.now();
 		if (delay <= 0) return; // reminder time already passed
 
-		timeoutId = setTimeout(() => {
+		timeoutId = setTimeout(async () => {
 			timeoutId = null;
 			playReminderSound();
-			showReminderNotification('Time to drink water! 💧', 'Stay hydrated — take a sip now.');
+			await showReminderNotification('Time to drink water! 💧', 'Stay hydrated — take a sip now.');
 		}, delay);
 	});
 

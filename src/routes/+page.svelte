@@ -169,7 +169,7 @@
 	</div>
 
 	<!-- Bottom: ml info -->
-	<div class="absolute bottom-0 inset-x-0 z-10 flex flex-col items-center pb-10 text-center">
+	<div class="absolute bottom-0 inset-x-0 z-10 flex flex-col items-center pb-10 text-center" style="text-shadow: 0 1px 6px rgba(255,255,255,0.75), 0 0 12px rgba(255,255,255,0.4);">
 		{#if $hydration.waterConsumed >= $hydration.settings.remindersPerDay}
 			<p class="text-lg font-semibold text-sky-800">{$totalDailyWater}ml consumed today</p>
 		{:else}
