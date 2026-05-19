@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { hydration, validateSettings, progress } from '$lib/stores/hydration';
+	import { hydration, validateSettings, progress, playReminderSound, showReminderNotification } from '$lib/stores/hydration';
 
 	let wakeTime = $state($hydration.settings.wakeTime);
 	let sleepTime = $state($hydration.settings.sleepTime);
@@ -67,9 +67,8 @@
 				await Notification.requestPermission();
 			}
 			if (Notification.permission === 'granted') {
-				new Notification('rehydrate 💧', {
-					body: `Time to drink! ${waterAmountPerReminder}ml to stay on track.`
-				});
+				playReminderSound();
+				await showReminderNotification('rehydrate 💧', `Time to drink! ${waterAmountPerReminder}ml to stay on track.`);
 			} else if (Notification.permission === 'denied') {
 				notifBlocked = true;
 			}

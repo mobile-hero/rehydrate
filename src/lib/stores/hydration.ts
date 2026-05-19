@@ -148,6 +148,90 @@ export const nextReminderTime: Readable<string | null> = derived(hydration, ($hy
 	return nextTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 });
 
+// Exact Date of the next reminder (used by the scheduler)
+export const nextReminderDate: Readable<Date | null> = derived(hydration, ($hydration) => {
+	const { wakeTime, sleepTime, remindersPerDay, isConfigured } = $hydration.settings;
+	if (!isConfigured || remindersPerDay <= 0) return null;
+
+	const nextIndex = $hydration.waterConsumed + 1;
+	if (nextIndex > remindersPerDay) return null;
+
+	const [wakeHour, wakeMin] = wakeTime.split(':').map(Number);
+	const [sleepHour, sleepMin] = sleepTime.split(':').map(Number);
+
+	const wakeDate = new Date();
+	wakeDate.setHours(wakeHour, wakeMin, 0, 0);
+
+	const sleepDate = new Date();
+	sleepDate.setHours(sleepHour, sleepMin, 0, 0);
+
+	if (sleepDate < wakeDate) {
+		sleepDate.setDate(sleepDate.getDate() + 1);
+	}
+
+	const totalInterval = (sleepDate.getTime() - wakeDate.getTime()) / remindersPerDay;
+	return new Date(wakeDate.getTime() + totalInterval * (nextIndex - 1));
+});
+
+export function playReminderSound() {
+	try {
+		new Audio('/reminder.wav').play();
+	} catch {
+		// Audio unavailable
+	}
+}
+
+/**
+ * Start watching nextReminderDate and fire a browser notification + chime when
+ * the scheduled time arrives. Returns a cleanup function to call on unmount.
+ */
+/**
+ * Show a notification via the Service Worker registration so it appears in the
+ * OS notification bar even when the tab is focused (plain `new Notification()`
+ * is silently suppressed by Chrome/Edge when the page is active).
+ */
+export async function showReminderNotification(title: string, body: string): Promise<void> {
+	if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+	try {
+		if ('serviceWorker' in navigator) {
+			const reg = await navigator.serviceWorker.getRegistration();
+			if (reg) {
+				await reg.showNotification(title, { body });
+				return;
+			}
+		}
+	} catch {
+		// fall through
+	}
+	new Notification(title, { body });
+}
+
+export function startReminderScheduler(): () => void {
+	let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+	const unsubscribe = nextReminderDate.subscribe((date) => {
+		if (timeoutId !== null) {
+			clearTimeout(timeoutId);
+			timeoutId = null;
+		}
+		if (!date) return;
+
+		const delay = date.getTime() - Date.now();
+		if (delay <= 0) return; // reminder time already passed
+
+		timeoutId = setTimeout(() => {
+			timeoutId = null;
+			playReminderSound();
+			showReminderNotification('Time to drink water! 💧', 'Stay hydrated — take a sip now.');
+		}, delay);
+	});
+
+	return () => {
+		unsubscribe();
+		if (timeoutId !== null) clearTimeout(timeoutId);
+	};
+}
+
 // Validation helper
 export function validateSettings(settings: Partial<HydrationSettings>): {
 	valid: boolean;
